@@ -16,7 +16,6 @@ type WifiInfo struct {
 
 func wifiInfoToStringForOpenData(ArrrayWifiInfo []WifiInfo) (string, error) {
 	if len(ArrrayWifiInfo) <= 0 {
-		fmt.Println("wifiInfoToStringForOpenData Error:WIfi Arrarylen is zero")
 		return "", errors.New("wifiInfoToStringForOpenData Error:WIfi Arrarylen is zero")
 	}
 
@@ -54,7 +53,6 @@ func responseStringToData(strRes string) (float64, float64, float64, error) {
 	json.Unmarshal([]byte(strRes), &tmphttpRes)
 
 	if 200 != tmphttpRes.Result {
-		fmt.Println("responseStringToData Error:result not 200")
 		return 0, 0, 0, errors.New("responseStringToData Error:result not 200")
 	}
 
