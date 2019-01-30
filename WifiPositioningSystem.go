@@ -2,6 +2,8 @@ package wps //WifiPositioningSystem
 
 import (
 	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,10 +14,10 @@ type WifiInfo struct {
 	Rssi int
 }
 
-func GetPositionByOpenData(ArrrayWifiInfo []WifiInfo) {
+func wifiInfoToStringForOpenData(ArrrayWifiInfo []WifiInfo) (string, error) {
 	if len(ArrrayWifiInfo) <= 0 {
-		fmt.Printf("Arrarylen=%d ,not support\n", len(ArrrayWifiInfo))
-		return
+		fmt.Println("wifiInfoToStringForOpenData Error:WIfi Arrarylen is zero")
+		return "", errors.New("wifiInfoToStringForOpenData Error:WIfi Arrarylen is zero")
 	}
 
 	var strtmp string
@@ -31,14 +33,51 @@ func GetPositionByOpenData(ArrrayWifiInfo []WifiInfo) {
 		strMacBase64Tmp := base64.StdEncoding.EncodeToString([]byte(strMacTmp))
 		strtmp = strtmp + strMacBase64Tmp
 	}
-	fmt.Println(strtmp)
+	return strtmp, nil
+}
+
+func responseStringToData(strRes string) (float64, float64, float64, error) {
+	type StructData struct {
+		Lat   float64
+		Range float64
+		Lon   float64
+		Time  int
+	}
+
+	type StructHttpRes struct {
+		Result int
+		Data   StructData
+	}
+
+	fmt.Println()
+	tmphttpRes := StructHttpRes{}
+	json.Unmarshal([]byte(strRes), &tmphttpRes)
+
+	if 200 != tmphttpRes.Result {
+		fmt.Println("responseStringToData Error:result not 200")
+		return 0, 0, 0, errors.New("responseStringToData Error:result not 200")
+	}
+
+	return tmphttpRes.Data.Lat, tmphttpRes.Data.Lon, tmphttpRes.Data.Range, nil
+}
+
+func GetPositionByOpenData(ArrrayWifiInfo []WifiInfo) (float64, float64, float64, error) {
+	strtmp, err := wifiInfoToStringForOpenData(ArrrayWifiInfo)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
 	response, err := http.Get(strtmp)
 	if err != nil {
-		// handle error
+		return 0, 0, 0, err
 	}
-	//程序在使用完回复后必须关闭回复的主体。
 	defer response.Body.Close()
 
 	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Println(string(body))
+	lat, lon, accRange, err := responseStringToData(string(body))
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return lat, lon, accRange, nil
 }
