@@ -162,3 +162,7 @@ func GetPositionByGeolocation(ArrrayWifiInfo []WifiInfo) (float64, float64, floa
 
 	return lat, lon, accRange, nil
 }
+
+func GetPositionBybaidu(ArrrayWifiInfo []WifiInfo) (float64, float64, float64, error) {
+	return 0, 0, 0, nil
+}
