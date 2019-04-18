@@ -62,11 +62,16 @@ func responseStringToDataForOpenData(strRes string) (float64, float64, float64, 
 func GetPositionByOpenData(ArrrayWifiInfo []WifiInfo) (float64, float64, float64, error) {
 	strtmp, err := wifiInfoToStringForOpenData(ArrrayWifiInfo)
 	if err != nil {
+		fmt.Println("GetPositionByOpenData String err")
 		return 0, 0, 0, err
 	}
 
+	fmt.Println("OpenData str:")
+	fmt.Println(strtmp)
+
 	response, err := http.Get(strtmp)
 	if err != nil {
+		fmt.Println("GetPositionByOpenData http err")
 		return 0, 0, 0, err
 	}
 	defer response.Body.Close()
@@ -74,6 +79,8 @@ func GetPositionByOpenData(ArrrayWifiInfo []WifiInfo) (float64, float64, float64
 	body, _ := ioutil.ReadAll(response.Body)
 	lat, lon, accRange, err := responseStringToDataForOpenData(string(body))
 	if err != nil {
+		fmt.Println("GetPositionByOpenData response err:")
+		fmt.Println(string(body))
 		return 0, 0, 0, err
 	}
 
