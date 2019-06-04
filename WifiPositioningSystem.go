@@ -130,6 +130,8 @@ func responseStringToDataForGeolocation(strRes string) (float64, float64, float6
 	tmphttpRes := StructData{}
 	json.Unmarshal([]byte(strRes), &tmphttpRes)
 
+	fmt.Println(strRes)
+
 	if 0 == tmphttpRes.Location.Lat {
 		type StructDataError struct {
 			Errors  string
@@ -183,21 +185,24 @@ func LBSInfoToJasonForGeolocation(ArrayCellID [3]string, ArrayLAC [3]string, Arr
 		MobileNetworkCode int64 `json:"mobileNetworkCode"`
 	}
 	type StructJasonData struct {
-		ConsiderIp string           `json:"considerIp"`
-		CellTowers StructCellTowers `json:"cellTowers"`
+		ConsiderIp string             `json:"considerIp"`
+		CellTowers []StructCellTowers `json:"cellTowers"`
 	}
 
-	var tmpStructCellTowers StructCellTowers
-	tmpStructCellTowers.CellId, _ = strconv.ParseInt(ArrayCellID[0], 10, 64)
-	tmpStructCellTowers.LocationAreaCode, _ = strconv.ParseInt(ArrayLAC[0], 10, 64)
-	tmpStructCellTowers.MobileCountryCode, _ = strconv.ParseInt(ArrayMCC[0], 10, 64)
-	tmpStructCellTowers.MobileNetworkCode, _ = strconv.ParseInt(ArrayMNC[0], 10, 64)
+	tmpStructCellTowers := make([]StructCellTowers, 1)
+
+	tmpStructCellTowers[0].CellId, _ = strconv.ParseInt(ArrayCellID[0], 10, 64)
+	tmpStructCellTowers[0].LocationAreaCode, _ = strconv.ParseInt(ArrayLAC[0], 10, 64)
+	tmpStructCellTowers[0].MobileCountryCode, _ = strconv.ParseInt(ArrayMCC[0], 10, 64)
+	tmpStructCellTowers[0].MobileNetworkCode, _ = strconv.ParseInt(ArrayMNC[0], 10, 64)
 
 	tmpMarshal := StructJasonData{"false", tmpStructCellTowers}
 	tmpByte, err := json.Marshal(tmpMarshal)
 	if err != nil {
 		return "", err
 	}
+
+	fmt.Println(string(tmpByte))
 
 	return string(tmpByte), nil
 }
