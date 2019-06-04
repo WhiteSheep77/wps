@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 type WifiInfo struct {
@@ -146,7 +147,7 @@ func responseStringToDataForGeolocation(strRes string) (float64, float64, float6
 	return tmphttpRes.Location.Lat, tmphttpRes.Location.Lng, tmphttpRes.Accuracy, nil
 }
 
-func GetPositionByGeolocation(ArrrayWifiInfo []WifiInfo) (float64, float64, float64, error) {
+func GetPositionByGeolocationWPS(ArrrayWifiInfo []WifiInfo) (float64, float64, float64, error) {
 
 	wifiJason, err := wifiInfoToJasonForGeolocation(ArrrayWifiInfo)
 	if err != nil {
@@ -172,4 +173,54 @@ func GetPositionByGeolocation(ArrrayWifiInfo []WifiInfo) (float64, float64, floa
 
 func GetPositionBybaidu(ArrrayWifiInfo []WifiInfo) (float64, float64, float64, error) {
 	return 0, 0, 0, nil
+}
+
+func LBSInfoToJasonForGeolocation(ArrayCellID [3]string, ArrayLAC [3]string, ArrayMNC [3]string, ArrayMCC [3]string) (string, error) {
+	type StructCellTowers struct {
+		CellId            int64 `json:"cellId"`
+		LocationAreaCode  int64 `json:"locationAreaCode"`
+		MobileCountryCode int64 `json:"mobileCountryCode"`
+		MobileNetworkCode int64 `json:"mobileNetworkCode"`
+	}
+	type StructJasonData struct {
+		ConsiderIp string           `json:"considerIp"`
+		CellTowers StructCellTowers `json:"cellTowers"`
+	}
+
+	var tmpStructCellTowers StructCellTowers
+	tmpStructCellTowers.CellId, _ = strconv.ParseInt(ArrayCellID[0], 10, 64)
+	tmpStructCellTowers.LocationAreaCode, _ = strconv.ParseInt(ArrayLAC[0], 10, 64)
+	tmpStructCellTowers.MobileCountryCode, _ = strconv.ParseInt(ArrayMCC[0], 10, 64)
+	tmpStructCellTowers.MobileNetworkCode, _ = strconv.ParseInt(ArrayMNC[0], 10, 64)
+
+	tmpMarshal := StructJasonData{"false", tmpStructCellTowers}
+	tmpByte, err := json.Marshal(tmpMarshal)
+	if err != nil {
+		return "", err
+	}
+
+	return string(tmpByte), nil
+}
+
+func GetPositionByGeolocationLBS(ArrayCellID [3]string, ArrayLAC [3]string, ArrayMNC [3]string, ArrayMCC [3]string) (float64, float64, float64, error) {
+	lbsJason, err := LBSInfoToJasonForGeolocation(ArrayCellID, ArrayLAC, ArrayMNC, ArrayMCC)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	req := bytes.NewBuffer([]byte(lbsJason))
+	body_type := "application/json;charset=utf-8"
+	response, err := http.Post(uRlGeo+aPIGeo, body_type, req)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	defer response.Body.Close()
+
+	body, _ := ioutil.ReadAll(response.Body)
+	lat, lon, accRange, err := responseStringToDataForGeolocation(string(body))
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return lat, lon, accRange, nil
 }
