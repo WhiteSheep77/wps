@@ -158,7 +158,7 @@ func GetPositionByGeolocationWPS(ArrrayWifiInfo []WifiInfo) (float64, float64, f
 
 	req := bytes.NewBuffer([]byte(wifiJason))
 	body_type := "application/json;charset=utf-8"
-	response, err := http.Post(uRlGeo+aPIGeo, body_type, req)
+	response, err := http.Post(uRlGeo+GetGeoAPI(), body_type, req)
 	if err != nil {
 		return 0, 0, 0, err
 	}
@@ -215,7 +215,7 @@ func GetPositionByGeolocationLBS(ArrayCellID [3]string, ArrayLAC [3]string, Arra
 
 	req := bytes.NewBuffer([]byte(lbsJason))
 	body_type := "application/json;charset=utf-8"
-	response, err := http.Post(uRlGeo+aPIGeo, body_type, req)
+	response, err := http.Post(uRlGeo+GetGeoAPI(), body_type, req)
 	if err != nil {
 		return 0, 0, 0, err
 	}

@@ -64,4 +64,10 @@ func main() {
 	lat, lon, accRange, err = wps.GetPositionByGeolocationLBS(ArrayCellID, ArrayLAC, ArrayMNC, ArrayMCC)
 	fmt.Println(lat, lon, accRange, err)
 
+	ArrayCellID[0] = "80220173"
+	ArrayLAC[0] = "0"
+	ArrayMNC[0] = "92"
+	ArrayMCC[0] = "466"
+	lat, lon, accRange, err = wps.GetPositionByGeolocationLBS(ArrayCellID, ArrayLAC, ArrayMNC, ArrayMCC)
+	fmt.Println(lat, lon, accRange, err)
 }
