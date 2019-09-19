@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -224,6 +225,68 @@ func GetPositionByGeolocationLBS(ArrayCellID [3]string, ArrayLAC [3]string, Arra
 	body, _ := ioutil.ReadAll(response.Body)
 	lat, lon, accRange, err := responseStringToDataForGeolocation(string(body))
 	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return lat, lon, accRange, nil
+}
+
+func wifiInfoAndLBSInfoToStringForCellocation(ArrayCellID [3]string, ArrayLAC [3]string, ArrayMNC [3]string, ArrayMCC [3]string, ArrrayWifiInfo []WifiInfo) (string, error) {
+	var strtmp string
+	strtmp = "http://api.cellocation.com:81/loc/?cl=" + ArrayMCC[0] + "," + ArrayMNC[0] + "," + ArrayLAC[0] + "," + ArrayCellID[0] + ",0"
+
+	if len(ArrrayWifiInfo) > 0 {
+		strtmp = strtmp + "&wl="
+		for i := 0; i < len(ArrrayWifiInfo); i++ {
+			if i != 0 {
+				strtmp = strtmp + ";"
+			}
+			strtmp = strtmp + ArrrayWifiInfo[i].Mac + "," + fmt.Sprintf("%d", ArrrayWifiInfo[i].Rssi)
+		}
+	}
+
+	strtmp = strtmp + "&output=xml"
+
+	return strtmp, nil
+}
+
+func responseStringToDataForCellocation(strRes string) (float64, float64, float64, error) {
+	type StructData struct {
+		XMLName xml.Name `xml:"response"` // 指定最外层的标签为config
+		Errcode int      `xml:"errcode"`
+		Lat     float64  `xml:"lat"`
+		Lon     float64  `xml:"lon"`
+		Radius  float64  `xml:"radius"`
+		Address string   `xml:"address"`
+	}
+
+	tmphttpRes := StructData{}
+	xml.Unmarshal([]byte(strRes), &tmphttpRes)
+	fmt.Println(tmphttpRes)
+	if 0 != tmphttpRes.Errcode {
+		fmt.Printf("tmphttpRes.errcode=%d", tmphttpRes.Errcode)
+		return 0, 0, 0, errors.New("responseStringToData Error:result not 200")
+	}
+
+	return tmphttpRes.Lat, tmphttpRes.Lon, tmphttpRes.Radius, nil
+}
+
+func GetPositionByCellocationMix(ArrayCellID [3]string, ArrayLAC [3]string, ArrayMNC [3]string, ArrayMCC [3]string, ArrrayWifiInfo []WifiInfo) (float64, float64, float64, error) {
+	strtmp, _ := wifiInfoAndLBSInfoToStringForCellocation(ArrayCellID, ArrayLAC, ArrayMNC, ArrayMCC, ArrrayWifiInfo)
+	fmt.Println(strtmp)
+
+	response, err := http.Get(strtmp)
+	if err != nil {
+		fmt.Println("GetCellocation http err")
+		return 0, 0, 0, err
+	}
+	defer response.Body.Close()
+
+	body, _ := ioutil.ReadAll(response.Body)
+	lat, lon, accRange, err := responseStringToDataForCellocation(string(body))
+	if err != nil {
+		fmt.Println("GetPositionByByCellocation response err:")
+		fmt.Println(string(body))
 		return 0, 0, 0, err
 	}
 

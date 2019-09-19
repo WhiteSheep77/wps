@@ -70,4 +70,18 @@ func main() {
 	ArrayMCC[0] = "466"
 	lat, lon, accRange, err = wps.GetPositionByGeolocationLBS(ArrayCellID, ArrayLAC, ArrayMNC, ArrayMCC)
 	fmt.Println(lat, lon, accRange, err)
+
+	ArrayCellID[0] = "80220173"
+	ArrayLAC[0] = "0"
+	ArrayMNC[0] = "92"
+	ArrayMCC[0] = "466"
+	ArrrayWifiInfo = make([]wps.WifiInfo, 3)
+	ArrrayWifiInfo[0].Mac = "00:1D:AA:83:E4:60"
+	ArrrayWifiInfo[0].Rssi = -56
+	ArrrayWifiInfo[1].Mac = "9C:D6:43:F2:CD:74"
+	ArrrayWifiInfo[1].Rssi = -73
+	ArrrayWifiInfo[2].Mac = "6C:19:8F:E3:BD:CF"
+	ArrrayWifiInfo[2].Rssi = -78
+	lat, lon, accRange, err = wps.GetPositionByCellocationMix(ArrayCellID, ArrayLAC, ArrayMNC, ArrayMCC, ArrrayWifiInfo)
+	fmt.Println(lat, lon, accRange, err)
 }
