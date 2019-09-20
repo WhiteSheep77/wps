@@ -233,7 +233,7 @@ func GetPositionByGeolocationLBS(ArrayCellID [3]string, ArrayLAC [3]string, Arra
 
 func wifiInfoAndLBSInfoToStringForCellocation(ArrayCellID [3]string, ArrayLAC [3]string, ArrayMNC [3]string, ArrayMCC [3]string, ArrrayWifiInfo []WifiInfo) (string, error) {
 	var strtmp string
-	strtmp = "http://api.cellocation.com:81/loc/?cl=" + ArrayMCC[0] + "," + ArrayMNC[0] + "," + ArrayLAC[0] + "," + ArrayCellID[0] + ",0"
+	strtmp = "http://vip.cellocation.com/loc/nveg5t0h.php?cl=" + ArrayMCC[0] + "," + ArrayMNC[0] + "," + ArrayLAC[0] + "," + ArrayCellID[0] + ",0"
 
 	if len(ArrrayWifiInfo) > 0 {
 		strtmp = strtmp + "&wl="
